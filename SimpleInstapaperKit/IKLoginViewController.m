@@ -108,7 +108,11 @@ const NSInteger kPasswordFieldClearButtonTag = 112;
 
 - (id)initWithCompletionHandler:(void(^)(BOOL loggedIn))completion
 {
-	self = [self initWithNibName:nil bundle:nil];
+    NSBundle *nibBundle = nil;
+#if SWIFT_PACKAGE
+    nibBundle = SWIFTPM_MODULE_BUNDLE;
+#endif
+	self = [self initWithNibName:nil bundle:nibBundle];
 	if (self != nil) {
 		_completionHandler = [completion copy];
         [self setupColors];
@@ -119,6 +123,11 @@ const NSInteger kPasswordFieldClearButtonTag = 112;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
+#if SWIFT_PACKAGE
+    if (nibBundleOrNil == nil) {
+        nibBundleOrNil = SWIFTPM_MODULE_BUNDLE;
+    }
+#endif
 	self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
 	if (self != nil) {
 		self.title = NSLocalizedString(@"Instapaper", nil);

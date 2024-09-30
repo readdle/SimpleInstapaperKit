@@ -51,7 +51,11 @@
 
 - (UIImage *)activityImage
 {
-	return [UIImage imageNamed:@"InstapaperActivity.png"];
+    NSBundle *bundle = nil;
+#if SWIFT_PACKAGE
+    bundle = SWIFTPM_MODULE_BUNDLE;
+#endif
+    return [UIImage imageNamed:@"InstapaperActivity.png" inBundle:bundle compatibleWithTraitCollection:nil];
 }
 
 - (BOOL)canPerformWithActivityItems:(NSArray *)activityItems
