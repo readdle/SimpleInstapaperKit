@@ -1,0 +1,15 @@
+{
+  "originHash" : "cb6d6693aba43afe2e5e6884506e3f93c34a151a57c20748ecc021515fd2f78e",
+  "pins" : [
+    {
+      "identity" : "uickeychainstore",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kishikawakatsumi/UICKeyChainStore.git",
+      "state" : {
+        "revision" : "8220ac38124613fb709508426f75fbac6921e261",
+        "version" : "2.2.1"
+      }
+    }
+  ],
+  "version" : 3
+}

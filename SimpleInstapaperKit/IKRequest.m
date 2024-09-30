@@ -30,8 +30,11 @@
 
 #import "IKRequest.h"
 
+#if SWIFT_PACKAGE
+@import UICKeyChainStore;
+#else
 #import "UICKeyChainStore.h"
-
+#endif
 
 #define IKInstapaperKeychainServiceName @"Instapaper"
 #define IKInstapaperUsernamePreferenceKey @"InstapaperUsername"
