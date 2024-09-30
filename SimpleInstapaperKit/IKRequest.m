@@ -47,12 +47,19 @@
 
 - (NSString *)URLEncode
 {
-	CFStringRef encodedStringRef = CFURLCreateStringByAddingPercentEscapes(NULL,
-																		   (__bridge CFStringRef)self,
-																		   NULL,
-																		   (__bridge CFStringRef)@"!*'();:@&=+$,/?%#[]",
-																		   kCFStringEncodingUTF8);
-	return CFBridgingRelease(encodedStringRef);
+    // https://url.spec.whatwg.org/#urlencoded-serializing
+    // The application/x-www-form-urlencoded percent-encode set contains all code points,
+    // except the ASCII alphanumeric, U+002A (*), U+002D (-), U+002E (.), and U+005F (_).
+    
+    NSMutableCharacterSet *urlFormAllowedCharacters = [NSMutableCharacterSet new];
+    [urlFormAllowedCharacters addCharactersInRange:NSMakeRange(0x2A, 1)];  // 0x2A            '*'
+    [urlFormAllowedCharacters addCharactersInRange:NSMakeRange(0x2D, 2)];  // 0x2D ... 0x2E   '-.'
+    [urlFormAllowedCharacters addCharactersInRange:NSMakeRange(0x30, 10)]; // 0x30 ... 0x39   '0123456789'
+    [urlFormAllowedCharacters addCharactersInRange:NSMakeRange(0x41, 26)]; // 0x41 ... 0x5A   'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    [urlFormAllowedCharacters addCharactersInRange:NSMakeRange(0x5F, 1)];  // 0x5F            '_'
+    [urlFormAllowedCharacters addCharactersInRange:NSMakeRange(0x61, 26)]; // 0x61 ... 0x7A   'abcdefghijklmnopqrstuvwxyz'
+    
+    return [self stringByAddingPercentEncodingWithAllowedCharacters:urlFormAllowedCharacters];
 }
 
 @end
@@ -114,16 +121,17 @@
 	[request setHTTPMethod:@"POST"];
 	[request setHTTPBody:[parameterString dataUsingEncoding:NSUTF8StringEncoding]];
 	
-	[NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
-		if (completed != nil) {
-			NSInteger statusCode = 0;
-			if ([response respondsToSelector:@selector(statusCode)]) {
-				statusCode = [(NSHTTPURLResponse *)response statusCode];
-			}
-			
-			completed(error == nil && (statusCode == 200 || statusCode == 201), statusCode);
-		}
-	}];
+    NSURLSessionDataTask *task = [NSURLSession.sharedSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (completed != nil) {
+            NSInteger statusCode = 0;
+            if ([response respondsToSelector:@selector(statusCode)]) {
+                statusCode = [(NSHTTPURLResponse *)response statusCode];
+            }
+            
+            completed(error == nil && (statusCode == 200 || statusCode == 201), statusCode);
+        }
+    }];
+    [task resume];
 }
 
 + (void)requestForAuthenticationWithParameters:(NSDictionary *)parameters completed:(IKRequestCompletionBlock)completed
