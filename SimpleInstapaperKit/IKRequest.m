@@ -121,16 +121,17 @@
 	[request setHTTPMethod:@"POST"];
 	[request setHTTPBody:[parameterString dataUsingEncoding:NSUTF8StringEncoding]];
 	
-	[NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
-		if (completed != nil) {
-			NSInteger statusCode = 0;
-			if ([response respondsToSelector:@selector(statusCode)]) {
-				statusCode = [(NSHTTPURLResponse *)response statusCode];
-			}
-			
-			completed(error == nil && (statusCode == 200 || statusCode == 201), statusCode);
-		}
-	}];
+    NSURLSessionDataTask *task = [NSURLSession.sharedSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (completed != nil) {
+            NSInteger statusCode = 0;
+            if ([response respondsToSelector:@selector(statusCode)]) {
+                statusCode = [(NSHTTPURLResponse *)response statusCode];
+            }
+            
+            completed(error == nil && (statusCode == 200 || statusCode == 201), statusCode);
+        }
+    }];
+    [task resume];
 }
 
 + (void)requestForAuthenticationWithParameters:(NSDictionary *)parameters completed:(IKRequestCompletionBlock)completed
