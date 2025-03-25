@@ -125,14 +125,18 @@
 	[request setHTTPBody:[parameterString dataUsingEncoding:NSUTF8StringEncoding]];
 	
     NSURLSessionDataTask *task = [NSURLSession.sharedSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        if (completed != nil) {
+        if (completed == nil) {
+            return;
+        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
             NSInteger statusCode = 0;
             if ([response respondsToSelector:@selector(statusCode)]) {
                 statusCode = [(NSHTTPURLResponse *)response statusCode];
             }
             
             completed(error == nil && (statusCode == 200 || statusCode == 201), statusCode);
-        }
+        });
     }];
     [task resume];
 }
